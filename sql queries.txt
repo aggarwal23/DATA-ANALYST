@@ -1,0 +1,104 @@
+--TO SELECT ENTIRE TABLE
+SELECT * FROM Orders;
+
+-- TO CHECK DUPLICATE VALUES IN TABLE
+SElect DISTINCT * from orders;
+
+--TO REMOVE NULL FOR POSTAL_CODE COLUMN
+Select *, COALESCE(postal_code::integer,region_id) AS COLLESCED_postal_code
+FROM orders;
+
+--to add customers table in orders table
+SELECT *
+FROM ORDERS O
+JOIN CUSTOMERS C USING(CUSTOMER_ID);
+
+--TO COUNT NUMBER OF SEGMENTS
+SELECT segment,count(*)As count_of_segments
+from customers
+Group BY 1;
+
+--TO CALCULATE TOTAL SALES
+Select *,sales*quantity as total_sales
+FROM ORDERS 
+
+
+
+--TO CALCULATE TOTAL PROFIT, TOTAL DISCOUNT, TOTAL SALES AFTER DISCOUNT
+select *,((sales*quantity)*profit) as total_profit,((sales*quantity)-((sales*quantity)*discount)) as total_sales_after_discount,((sales*quantity)*discount) as total_discount
+from orders;
+
+----TO CALCULATE SUM OF TOTAL SALES AFTER DISCOUNT AND TOTAL PROFIT FOR EACH SEGMENT
+select segment,sum((sales*quantity)-((sales*quantity)*discount))::money as total_sales_after_discount,sum((sales*quantity)*profit)::money as total_profit
+from(SELECT *
+FROM ORDERS O
+JOIN CUSTOMERS C USING(CUSTOMER_ID)
+)AS temp
+group by 1
+
+--TO ADD PRODUCT TABLE IN ORDERS TABLE
+select a.*, b.category, b.product_cost_to_consumer
+from orders a
+join
+products b using (product_id)
+
+--TO CALCULATE WHICH PRODUCT SEGMENT PERFORMING BEST
+Select category, sum(product_cost_to_consumer)::money as total_cost_to_consumer
+from products
+group by 1
+
+--TO calculate which product segment perform best based on orders
+select b.category, count(order_id)AS total_count
+from orders 
+join products b using(product_id)
+group by 1
+order by 2 DESC;
+
+--TO CALCUALTE TOTAL OFFICE SUPPLIES FOR EACH CUSTOMER SEGMENT
+select customers.segment,products.category,count(products.category)as total_products
+from orders
+join products on orders.product_id=products.product_id
+join customers on orders.customer_id=customers.customer_id
+where products.category = 'Office Supplies'
+group by  customers.segment,products.category
+
+--TO CALCUALTE TOTAL FURNITURE FOR EACH CUSTOMER SEGMENT
+select customers.segment,products.category,count(products.category)as total_products
+from orders
+join products on orders.product_id=products.product_id
+join customers on orders.customer_id=customers.customer_id
+where products.category = 'Furniture'
+group by  customers.segment,products.category
+
+--TO CALCUALTE TOTAL TECHNOLOGY FOR EACH CUSTOMER SEGMENT
+select customers.segment,products.category,count(products.category)as total_products
+from orders
+join products on orders.product_id=products.product_id
+join customers on orders.customer_id=customers.customer_id
+where products.category = 'Technology'
+group by  customers.segment,products.category
+
+--To calcualte total returns with reason returned for furniture category
+select products.category,returns.reason_returned,count(return_quantity)as total_return_quantity
+from orders
+join products on orders.product_id=products.product_id
+join returns on orders.order_id=returns.order_id
+where products.category='Furniture'
+group by products.category, returns.reason_returned
+
+--To calcualte total returns with reason returned for technology category
+select products.category,returns.reason_returned,count(return_quantity)as total_return_quantity
+from orders
+join products on orders.product_id=products.product_id
+join returns on orders.order_id=returns.order_id
+where products.category='Technology'
+group by products.category, returns.reason_returned
+
+--To calcualte total returns with reason returned for office supplies category
+select products.category,returns.reason_returned,count(return_quantity)as total_return_quantity
+from orders
+join products on orders.product_id=products.product_id
+join returns on orders.order_id=returns.order_id
+where products.category='Office Supplies'
+group by products.category, returns.reason_returned
+
